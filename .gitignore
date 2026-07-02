@@ -1,0 +1,14 @@
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+data/raw/
+data/processed/
+.env
+.env.*
+wrds_credentials*
+.claude/settings.local.json
+.DS_Store
+*.log
+reports/
