@@ -11,7 +11,7 @@
 #   - a Gmail app password in ~/.heston_secrets for the email report.
 #
 # NOTE: cron fires in the machine's LOCAL timezone. The default schedule below
-# assumes local time is US Eastern; adjust CRON_SCHEDULE if it is not.
+# assumes local time is London (BST); adjust CRON_SCHEDULE if it is not.
 set -euo pipefail
 
 # --- Configuration ----------------------------------------------------------------
@@ -20,8 +20,8 @@ readonly VENV_PYTHON="${PROJECT_DIR}/.venv/bin/python"
 readonly RUNNER_MODULE="src.paper_trading.runner"
 readonly LOG_DIR="${PROJECT_DIR}/logs"
 readonly CRON_LOG="${LOG_DIR}/cron.log"
-# Weekdays (Mon-Fri) at 16:30, after the 16:00 ET cash close.
-readonly CRON_SCHEDULE="30 16 * * 1-5"
+# Weekdays (Mon-Fri) at 21:30 London (BST) = 16:30 ET, after the cash close.
+readonly CRON_SCHEDULE="30 21 * * 1-5"
 # Unique marker comment so re-running this script replaces our entry only.
 readonly CRON_MARKER="# heston-paper-trading"
 
