@@ -20,8 +20,8 @@ readonly VENV_PYTHON="${PROJECT_DIR}/.venv/bin/python"
 readonly RUNNER_MODULE="src.paper_trading.runner"
 readonly LOG_DIR="${PROJECT_DIR}/logs"
 readonly CRON_LOG="${LOG_DIR}/cron.log"
-# Weekdays (Mon-Fri) at 21:30 London (BST) = 16:30 ET, after the cash close.
-readonly CRON_SCHEDULE="30 21 * * 1-5"
+# Weekdays (Mon-Fri) at 21:00 London (BST) = 16:00 ET, the cash close.
+readonly CRON_SCHEDULE="0 21 * * 1-5"
 # Unique marker comment so re-running this script replaces our entry only.
 readonly CRON_MARKER="# heston-paper-trading"
 

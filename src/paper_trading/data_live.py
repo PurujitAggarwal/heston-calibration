@@ -63,6 +63,7 @@ UNDERLYING_SYMBOL: str = "SPX"
 UNDERLYING_SECTYPE: str = "IND"
 UNDERLYING_EXCHANGE: str = "CBOE"
 UNDERLYING_CURRENCY: str = "USD"
+SPOT_RETRY_WAIT_SECONDS: float = 60.0  # wait before the single spot-price retry
 
 # --- Option universe --------------------------------------------------------------
 OPTION_EXCHANGE: str = "CBOE"
@@ -170,6 +171,24 @@ def qualify_underlying(ib: Any) -> Any:
     return qualified[0]
 
 
+def _ticker_price(ticker: Any) -> float:
+    """Extract a usable index level from a ticker (live price, else close).
+
+    Args:
+        ticker: SPX index ticker snapshot.
+
+    Returns:
+        The market price, falling back to the prior close, or NaN if neither
+        is available.
+    """
+    price = ticker.marketPrice()
+    if price is None or not np.isfinite(price):
+        price = ticker.close
+    if price is None or not np.isfinite(price):
+        return float("nan")
+    return float(price)
+
+
 def underlying_spot(ib: Any, underlying: Any) -> float:
     """Snapshot the SPX index level.
 
@@ -179,16 +198,23 @@ def underlying_spot(ib: Any, underlying: Any) -> float:
 
     Returns:
         The current index level, falling back to the prior close if the live
-        market price is unavailable.
+        market price is unavailable. If neither is available, waits
+        :data:`SPOT_RETRY_WAIT_SECONDS` and retries the snapshot once.
 
     Raises:
-        ValueError: If neither a live price nor a close is available.
+        ValueError: If no usable price is available after the retry.
     """
     (ticker,) = ib.reqTickers(underlying)
-    price = ticker.marketPrice()
-    if price is None or not np.isfinite(price):
-        price = ticker.close
-    if price is None or not np.isfinite(price):
+    price = _ticker_price(ticker)
+    if not np.isfinite(price):
+        logger.warning(
+            "no usable SPX index price; retrying once in %.0fs",
+            SPOT_RETRY_WAIT_SECONDS,
+        )
+        ib.sleep(SPOT_RETRY_WAIT_SECONDS)
+        (ticker,) = ib.reqTickers(underlying)
+        price = _ticker_price(ticker)
+    if not np.isfinite(price):
         raise ValueError("no usable SPX index price from IBKR")
     return float(price)
 
